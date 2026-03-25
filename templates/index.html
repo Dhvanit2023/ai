@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Studio Pro | v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+        body {
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .chat-container::-webkit-scrollbar { width: 5px; }
+        .chat-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        
+        .custom-loader {
+            width: 14px; height: 14px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-top: 2px solid #38bdf8;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .scale-up-center {
+            animation: scale-up-center 0.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) both;
+        }
+        @keyframes scale-up-center {
+            0% { transform: scale(0.5); opacity: 0; transform-origin: bottom left; }
+            100% { transform: scale(1); opacity: 1; transform-origin: bottom left; }
+        }
+    </style>
+</head>
+<body class="text-slate-200 p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent">
+                    <i class="fas fa-bolt-lightning mr-2"></i>AI Studio Pro
+                </h1>
+                <p class="text-slate-500 text-[10px] tracking-widest uppercase mt-1">Advanced Neural Interface</p>
+            </div>
+           
+<div class="flex gap-3">
+    <a href="/developer" target="_blank" title="About Developer" 
+       class="h-10 w-10 rounded-full border border-slate-700 flex items-center justify-center bg-slate-800/50 hover:border-sky-500 hover:text-sky-400 transition-all cursor-pointer">
+        <i class="fas fa-user text-sm"></i>
+    </a>
+</div>
+        </header>
+
+        <div class="flex flex-col h-[75vh]">
+            <div class="glass-card rounded-3xl p-6 flex flex-col h-full shadow-2xl relative">
+                
+                <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-4">
+                    <span class="flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        <span class="h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
+                        System Active
+                    </span>
+                    <button onclick="resetUI()" class="text-slate-500 hover:text-sky-400 transition-colors text-[10px] uppercase font-bold">Clear Mode</button>
+                </div>
+
+                <div id="chatOutput" class="chat-container flex-grow overflow-y-auto space-y-6 pr-2 mb-6">
+                    <div class="flex gap-3">
+                        <div class="h-8 w-8 rounded-lg bg-sky-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-500/20">
+                            <i class="fas fa-robot text-xs"></i>
+                        </div>
+                        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl rounded-tl-none text-sm text-slate-300 max-w-[85%] leading-relaxed">
+                            Welcome to the Pro interface. Use the <i class="fas fa-plus mx-1 text-sky-400"></i> button to access specialized AI tools.
+                        </div>
+                    </div>
+                </div>
+
+                <div id="smartMenu" class="hidden absolute bottom-24 left-6 z-20 flex flex-col gap-3 scale-up-center">
+                    <button onclick="setMode('image')" class="bg-slate-800 hover:bg-purple-600 border border-slate-700 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 transition-all group">
+                        <div class="h-8 w-8 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-white/20">
+                            <i class="fas fa-wand-magic-sparkles text-purple-400 group-hover:text-white"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-bold">Image Creator</p>
+                            <p class="text-[10px] text-slate-400 group-hover:text-purple-100">Generate art from text</p>
+                        </div>
+                    </button>
+                    <button onclick="setMode('detect')" class="bg-slate-800 hover:bg-emerald-600 border border-slate-700 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-4 transition-all group">
+                        <div class="h-8 w-8 rounded-lg bg-emerald-500/20 flex items-center justify-center group-hover:bg-white/20">
+                            <i class="fas fa-fingerprint text-emerald-400 group-hover:text-white"></i>
+                        </div>
+                        <div class="text-left">
+                            <p class="text-sm font-bold">Forensic AI Detector</p>
+                            <p class="text-[10px] text-slate-400 group-hover:text-emerald-100">Scan for synthetic pixels</p>
+                        </div>
+                    </button>
+                </div>
+
+                <div id="inputBar" class="relative flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-sky-500/50 transition-all">
+                    
+                    <button id="plusBtn" onclick="toggleMenu()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-700 text-slate-400 transition-all">
+                        <i class="fas fa-plus text-lg" id="plusIcon"></i>
+                    </button>
+
+                    <input id="chatInput" type="text" placeholder="Message AI Studio..." 
+                        class="flex-grow bg-transparent border-none px-2 py-2 text-slate-200 focus:outline-none placeholder:text-slate-500"
+                        onkeypress="if(event.key === 'Enter') handleAction()">
+
+                    <input id="imageInput" type="text" placeholder="Enter image description..." 
+                        class="hidden flex-grow bg-transparent border-none px-2 py-2 text-purple-300 font-medium focus:outline-none placeholder:text-purple-900/50"
+                        onkeypress="if(event.key === 'Enter') handleAction()">
+
+                    <label id="detectLabel" class="hidden flex-grow px-2 py-2 text-emerald-400 text-sm cursor-pointer italic font-medium animate-pulse">
+                        <i class="fas fa-upload mr-2"></i> Click to select image for analysis...
+                        <input type="file" id="aiFile" class="hidden" onchange="runDetect(this)">
+                    </label>
+
+                    <button id="actionBtn" onclick="handleAction()" class="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-600 hover:bg-sky-500 text-white transition-all shadow-lg shadow-sky-500/20">
+                        <i class="fas fa-arrow-up" id="actionIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-8 text-center text-slate-600 text-[10px] tracking-[0.3em] uppercase">
+            &copy; 2026 AI Studio Pro &bull; v2.0.4 Build
+        </footer>
+    </div>
+
+    <script>
+        let currentMode = 'chat';
+
+        function toggleMenu() {
+            const menu = document.getElementById('smartMenu');
+            const icon = document.getElementById('plusIcon');
+            
+            if (currentMode !== 'chat') {
+                resetUI();
+            } else {
+                menu.classList.toggle('hidden');
+                icon.classList.toggle('rotate-45');
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('smartMenu').classList.add('hidden');
+            document.getElementById('plusIcon').className = 'fas fa-times text-lg text-red-400';
+            
+            // Hide all
+            document.getElementById('chatInput').classList.add('hidden');
+            document.getElementById('imageInput').classList.add('hidden');
+            document.getElementById('detectLabel').classList.add('hidden');
+            
+            const btn = document.getElementById('actionBtn');
+            const icon = document.getElementById('actionIcon');
+            const bar = document.getElementById('inputBar');
+
+            if (mode === 'image') {
+                document.getElementById('imageInput').classList.remove('hidden');
+                document.getElementById('imageInput').focus();
+                btn.className = "flex items-center justify-center w-10 h-10 rounded-xl bg-purple-600 text-white shadow-lg shadow-purple-500/40";
+                icon.className = "fas fa-wand-magic-sparkles";
+                bar.classList.add('border-purple-500/50');
+            } else if (mode === 'detect') {
+                document.getElementById('detectLabel').classList.remove('hidden');
+                btn.className = "flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-600 text-white shadow-lg shadow-emerald-500/40";
+                icon.className = "fas fa-fingerprint";
+                bar.classList.add('border-emerald-500/50');
+            }
+        }
+
+        function resetUI() {
+            currentMode = 'chat';
+            document.getElementById('plusIcon').className = 'fas fa-plus text-lg';
+            document.getElementById('chatInput').classList.remove('hidden');
+            document.getElementById('imageInput').classList.add('hidden');
+            document.getElementById('detectLabel').classList.add('hidden');
+            
+            document.getElementById('actionBtn').className = "flex items-center justify-center w-10 h-10 rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-500/20";
+            document.getElementById('actionIcon').className = "fas fa-arrow-up";
+            document.getElementById('inputBar').className = "relative flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-2xl p-2 focus-within:ring-2 focus-within:ring-sky-500/50 transition-all";
+            document.getElementById('smartMenu').classList.add('hidden');
+        }
+
+        function addMessage(sender, text, colorClass) {
+            const output = document.getElementById("chatOutput");
+            const id = "msg-" + Date.now();
+            const isUser = sender === "user";
+            
+            const bubbleClass = isUser ? `${colorClass} text-white shadow-lg` : 'bg-slate-800/80 border border-slate-700 text-slate-200';
+
+            output.innerHTML += `
+                <div class="flex ${isUser ? 'justify-end' : 'justify-start'} gap-3 animate-fade-in">
+                    ${!isUser ? '<div class="h-8 w-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0"><i class="fas fa-robot text-xs text-sky-400"></i></div>' : ''}
+                    <div id="${id}" class="${bubbleClass} p-4 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} text-sm max-w-[85%] leading-relaxed">
+                        ${text}
+                    </div>
+                </div>`;
+            output.scrollTop = output.scrollHeight;
+            return id;
+        }
+
+        async function handleAction() {
+            if (currentMode === 'chat') {
+                const input = document.getElementById('chatInput');
+                const val = input.value.trim();
+                if(!val) return;
+                addMessage("user", val, "bg-sky-600");
+                input.value = "";
+                const loadId = addMessage("ai", '<span class="custom-loader mr-2"></span> Processing...', "");
+                
+                try {
+                    let res = await fetch("/chat", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({message: val})
+                    });
+                    let data = await res.json();
+                    document.getElementById(loadId).innerHTML = data.response;
+                } catch(e) { document.getElementById(loadId).innerText = "Connection lost."; }
+
+            } else if (currentMode === 'image') {
+                const input = document.getElementById('imageInput');
+                const prompt = input.value.trim();
+                if(!prompt) return;
+                addMessage("user", `<i class="fas fa-wand-magic-sparkles mr-2"></i> Creating: ${prompt}`, "bg-purple-600");
+                input.value = "";
+                const loadId = addMessage("ai", '<span class="custom-loader mr-2"></span> Synthesizing artistic vision...', "");
+                
+                try {
+                    let res = await fetch("/generate-image", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({prompt: prompt})
+                    });
+                    let data = await res.json();
+                    document.getElementById(loadId).innerHTML = `<img src="${data.image_url}" class="rounded-xl shadow-2xl mt-2 w-full hover:scale-[1.02] transition-transform cursor-pointer">`;
+                } catch(e) { document.getElementById(loadId).innerText = "Vision failed."; }
+                resetUI();
+            }
+        }
+
+        async function runDetect(input) {
+            if (!input.files[0]) return;
+            const fileName = input.files[0].name;
+            addMessage("user", `<i class="fas fa-fingerprint mr-2"></i> Analyzing: ${fileName}`, "bg-emerald-600");
+            const loadId = addMessage("ai", '<span class="custom-loader mr-2"></span> Deep-scanning pixel layers...', "");
+
+            let formData = new FormData();
+            formData.append("file", input.files[0]);
+
+            try {
+                let res = await fetch("/detect-ai-image", { method: "POST", body: formData });
+                let data = await res.json();
+                document.getElementById(loadId).innerHTML = `
+                    <div class="space-y-2">
+                        <p class="font-bold border-b border-slate-700 pb-1 uppercase text-[10px] tracking-widest text-slate-400">Forensic Result</p>
+                        <p class="text-lg">Classification: <span class="text-emerald-400 font-bold">${data.result}</span></p>
+                        <p class="text-xs text-slate-500">Confidence Score: ${data.confidence}%</p>
+                    </div>`;
+            } catch (e) { document.getElementById(loadId).innerText = "Detection offline."; }
+            resetUI();
+        }
+    </script>
+</body>
+</html>
