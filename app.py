@@ -3,25 +3,18 @@ import uuid
 import requests
 import time
 from flask import Flask, request, jsonify, render_template, send_from_directory
-import tensorflow as tf
+
+from gradio_client import Client, handle_file
 app = Flask(__name__)
 
 # ── Folders ──
 for folder in ["models", "generated", "uploads"]:
     os.makedirs(folder, exist_ok=True)
 
-
-try:
-    detector_model = tf.keras.models.load_model("models/ai_image_detector.h5")
-    print("✅ Model Loaded")
-except:
-    detector_model = None
-    print("⚠️ No detector model found")
-
-
-
-
+client = Client("dhvanit2026/ai-image-detector")
 # ── Config ──
+
+#HF_TOKEN = os.getenv("KEY")
 
 HF_TOKEN = os.getenv("KEY")
 
@@ -130,38 +123,35 @@ def create_image():
 from PIL import Image
 import numpy as np
 
+import base64
 @app.route("/detect-ai-image", methods=["POST"])
 def detect():
-    if not detector_model:
-        return jsonify({"error": "Model not loaded"})
-
     try:
         file = request.files.get("file")
 
         if not file:
             return jsonify({"error": "No file uploaded"})
 
-        # Safe filename
-        filename = f"{uuid.uuid4().hex}.png"
-        path = os.path.join("uploads", filename)
-        file.save(path)
+        temp_path = "temp.png"
+        file.save(temp_path)
 
-        # Open + preprocess image
-        img = Image.open(path).convert("RGB")
-        img = img.resize((224, 224))
+        # call HF Space API
+        result = client.predict(
+            image=handle_file(temp_path),
+            api_name="/predict"
+        )
 
-        arr = np.array(img) / 255.0
-        arr = np.expand_dims(arr, axis=0)
+        print("HF RESULT:", result)
 
-        # Prediction
-        pred = detector_model.predict(arr)
-        conf = float(pred[0][0])
+        # extract label
+        label = result.get("label", "Unknown")
 
-        label = "AI Generated" if conf < 0.5 else "Real Image"
+        # ✅ delete temp file AFTER use
+        import os
+        os.remove(temp_path)
 
         return jsonify({
-            "result": label,
-            #"confidence": round(conf * 100, 2)
+            "result": label
         })
 
     except Exception as e:
